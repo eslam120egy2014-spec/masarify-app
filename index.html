@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>مصاريفي - النسخة المضمونة</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        body { font-family: 'Cairo', sans-serif; background-color: #f1f5f9; color: #1e293b; touch-action: manipulation; }
+        .card { background: white; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
+        input, select { border: 1px solid #cbd5e1 !important; border-radius: 10px !important; padding: 10px !important; width: 100%; outline: none; background: #fff; }
+        
+        @media print {
+            .no-print { display: none !important; }
+            #printable-area { display: block !important; position: absolute; top: 0; left: 0; width: 100%; background: white; z-index: 9999; }
+        }
+    </style>
+</head>
+<body class="pb-20">
+
+    <!-- Header -->
+    <header class="p-4 bg-white border-b sticky top-0 z-50 flex justify-between items-center no-print">
+        <div class="flex items-center gap-2">
+            <div class="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center text-white shadow-md">
+                <i class="fas fa-wallet"></i>
+            </div>
+            <span class="text-lg font-black tracking-tight">مصاريفي</span>
+        </div>
+        <button onclick="toggleModal('settings-modal')" class="w-10 h-10 flex items-center justify-center text-slate-400">
+            <i class="fas fa-user-circle text-2xl"></i>
+        </button>
+    </header>
+
+    <main class="max-w-md mx-auto p-4 space-y-4 no-print">
+        
+        <!-- Stats -->
+        <div class="grid grid-cols-2 gap-3">
+            <div class="card p-4 bg-blue-600 text-white border-none shadow-blue-200 shadow-lg">
+                <p class="text-[10px] uppercase font-bold opacity-70 mb-1">إجمالي الشهر</p>
+                <div class="flex items-baseline gap-1">
+                    <span id="stat-total" class="text-xl font-black">0</span>
+                    <span class="text-[10px]">ج.م</span>
+                </div>
+            </div>
+            <div class="card p-4 bg-white border-slate-200">
+                <p class="text-[10px] uppercase font-bold text-slate-400 mb-1">رحلات الشهر</p>
+                <p id="stat-count" class="text-xl font-black text-slate-800">0</p>
+            </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="card p-3 space-y-3">
+            <input type="date" id="main-date" class="text-center font-bold text-blue-600 border-none bg-slate-50">
+            <div class="grid grid-cols-3 gap-2">
+                <button onclick="shareText()" class="bg-emerald-500 text-white p-3 rounded-xl text-xs font-bold shadow-sm">
+                    <i class="fab fa-whatsapp mb-1 block text-lg"></i> واتساب
+                </button>
+                <button onclick="previewReport('daily')" class="bg-slate-100 text-slate-700 p-3 rounded-xl text-xs font-bold border border-slate-200">
+                    <i class="fas fa-file-invoice mb-1 block text-lg"></i> تقرير يومي
+                </button>
+                <button onclick="previewReport('monthly')" class="bg-slate-800 text-white p-3 rounded-xl text-xs font-bold">
+                    <i class="fas fa-calendar-alt mb-1 block text-lg text-blue-400"></i> تقرير شهري
+                </button>
+            </div>
+        </div>
+
+        <!-- Add Form -->
+        <div class="card p-5">
+            <h3 class="text-sm font-black mb-4 flex items-center gap-2">
+                <span class="w-1 h-3 bg-blue-600 rounded-full"></span> تسجيل حركة
+            </h3>
+            <form id="expense-form" class="space-y-4">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 mb-1 block">المبلغ</label>
+                        <input type="number" id="inp-amount" placeholder="0.00" required step="0.5" class="font-black text-blue-600">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 mb-1 block">الوسيلة</label>
+                        <select id="inp-type" class="font-bold text-sm">
+                            <option value="باص / ميني باص">🚌 باص / ميني باص</option>
+                            <option value="أوبر / كريم">🚕 أوبر / كريم</option>
+                            <option value="تاكسي">🚕 تاكسي</option>
+                            <option value="مترو">🚇 مترو</option>
+                            <option value="بنزين">⛽ بنزين</option>
+                        </select>
+                    </div>
+                </div>
+                <input type="text" id="inp-note" placeholder="الوجهة (مثال: من البيت للمكتب)" class="text-sm">
+                <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-xl font-black shadow-lg shadow-blue-100">حفظ البيانات</button>
+            </form>
+        </div>
+
+        <!-- History -->
+        <div id="logs-container" class="space-y-2"></div>
+    </main>
+
+    <!-- Modals -->
+    <div id="settings-modal" class="fixed inset-0 bg-slate-900/60 z-[100] hidden flex items-center justify-center p-4 no-print">
+        <div class="card w-full max-w-xs p-6 space-y-4">
+            <h2 class="font-black">بيانات التقارير</h2>
+            <input type="text" id="cfg-name" placeholder="الاسم">
+            <input type="text" id="cfg-job" placeholder="الوظيفة">
+            <input type="text" id="cfg-company" placeholder="الشركة">
+            <button onclick="saveSettings()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold">حفظ وإغلاق</button>
+        </div>
+    </div>
+
+    <!-- Enhanced Report Preview -->
+    <div id="report-modal" class="fixed inset-0 bg-white z-[200] hidden overflow-y-auto no-print">
+        <div class="sticky top-0 p-4 bg-slate-50 border-b flex justify-between items-center">
+            <button onclick="toggleModal('report-modal')" class="text-slate-500 font-bold"><i class="fas fa-times"></i> إغلاق</button>
+            <div class="flex gap-2">
+                <button onclick="window.print()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold">طباعة / حفظ PDF</button>
+            </div>
+        </div>
+        <div id="printable-area" class="p-6 bg-white max-w-2xl mx-auto">
+            <!-- Content -->
+        </div>
+    </div>
+
+    <script>
+        let db = JSON.parse(localStorage.getItem('exp_final_db')) || [];
+        let cfg = JSON.parse(localStorage.getItem('exp_final_cfg')) || { name: '', job: '', company: '' };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('main-date').value = new Date().toISOString().split('T')[0];
+            document.getElementById('cfg-name').value = cfg.name;
+            document.getElementById('cfg-job').value = cfg.job;
+            document.getElementById('cfg-company').value = cfg.company;
+            render();
+        });
+
+        function toggleModal(id) { document.getElementById(id).classList.toggle('hidden'); }
+
+        function saveSettings() {
+            cfg = {
+                name: document.getElementById('cfg-name').value,
+                job: document.getElementById('cfg-job').value,
+                company: document.getElementById('cfg-company').value
+            };
+            localStorage.setItem('exp_final_cfg', JSON.stringify(cfg));
+            toggleModal('settings-modal');
+        }
+
+        document.getElementById('expense-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const entry = {
+                id: Date.now(),
+                val: parseFloat(document.getElementById('inp-amount').value),
+                type: document.getElementById('inp-type').value,
+                note: document.getElementById('inp-note').value || 'انتقالات عمل',
+                date: new Date().toISOString()
+            };
+            db.unshift(entry);
+            localStorage.setItem('exp_final_db', JSON.stringify(db));
+            e.target.reset();
+            render();
+        });
+
+        function deleteItem(id) {
+            if(confirm('حذف؟')) {
+                db = db.filter(x => x.id !== id);
+                localStorage.setItem('exp_final_db', JSON.stringify(db));
+                render();
+            }
+        }
+
+        function render() {
+            const list = document.getElementById('logs-container');
+            const now = new Date();
+            const monthly = db.filter(x => {
+                const d = new Date(x.date);
+                return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+            });
+
+            document.getElementById('stat-total').innerText = monthly.reduce((s,x)=>s+x.val, 0).toLocaleString();
+            document.getElementById('stat-count').innerText = monthly.length;
+
+            list.innerHTML = db.map(x => `
+                <div class="card p-3 flex justify-between items-center border-slate-200">
+                    <div class="flex items-center gap-3">
+                        <div class="text-lg">${x.type.includes('باص') ? '🚌' : '🚕'}</div>
+                        <div>
+                            <p class="font-bold text-xs text-slate-800">${x.note}</p>
+                            <p class="text-[9px] text-slate-400 font-bold">${new Date(x.date).toLocaleDateString('ar-EG')} - ${x.type}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="font-black text-blue-600 text-sm">${x.val}</span>
+                        <button onclick="deleteItem(${x.id})" class="text-slate-300 px-2"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function shareText() {
+            const dVal = document.getElementById('main-date').value;
+            const target = new Date(dVal).toDateString();
+            const daily = db.filter(x => new Date(x.date).toDateString() === target);
+            
+            if(daily.length === 0) return alert('لا يوجد بيانات');
+
+            let total = 0;
+            let txt = `📋 تقرير مصروفات: ${new Date(dVal).toLocaleDateString('ar-EG')}\n`;
+            txt += `👤 الموظف: ${cfg.name || '---'}\n`;
+            txt += `----------------------\n`;
+            daily.forEach(x => {
+                total += x.val;
+                txt += `• ${x.note}: ${x.val} ج.م\n`;
+            });
+            txt += `----------------------\n`;
+            txt += `💰 الإجمالي: ${total} ج.م`;
+
+            // Copy to clipboard fallback
+            const dummy = document.createElement("textarea");
+            document.body.appendChild(dummy);
+            dummy.value = txt;
+            dummy.select();
+            document.execCommand("copy");
+            document.body.removeChild(dummy);
+
+            alert('تم نسخ نص التقرير! يمكنك الآن لصقه في الواتساب.');
+            
+            // Try to open WhatsApp anyway
+            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(txt)}`, '_blank');
+        }
+
+        function previewReport(type) {
+            const dVal = document.getElementById('main-date').value;
+            const target = new Date(dVal);
+            let filtered = [];
+            let label = "";
+
+            if(type === 'daily') {
+                filtered = db.filter(x => new Date(x.date).toDateString() === target.toDateString());
+                label = "يوم: " + target.toLocaleDateString('ar-EG');
+            } else {
+                filtered = db.filter(x => {
+                    const d = new Date(x.date);
+                    return d.getMonth() === target.getMonth() && d.getFullYear() === target.getFullYear();
+                });
+                label = "شهر: " + target.toLocaleDateString('ar-EG', {month:'long', year:'numeric'});
+            }
+
+            if(filtered.length === 0) return alert('لا توجد بيانات');
+
+            const total = filtered.reduce((s,x)=>s+x.val, 0);
+            
+            document.getElementById('printable-area').innerHTML = `
+                <div style="font-family:'Cairo'; border:2px solid #3b82f6; padding:20px; border-radius:10px;">
+                    <h2 style="text-align:center; color:#3b82f6; border-bottom:1px solid #eee; padding-bottom:10px;">تقرير انتقالات</h2>
+                    <p><strong>الاسم:</strong> ${cfg.name || '---'}</p>
+                    <p><strong>الفترة:</strong> ${label}</p>
+                    <table style="width:100%; border-collapse:collapse; margin-top:20px;">
+                        <tr style="background:#f1f5f9;">
+                            <th style="border:1px solid #ddd; padding:8px;">التاريخ</th>
+                            <th style="border:1px solid #ddd; padding:8px;">البيان</th>
+                            <th style="border:1px solid #ddd; padding:8px;">المبلغ</th>
+                        </tr>
+                        ${filtered.map(x => `
+                            <tr>
+                                <td style="border:1px solid #ddd; padding:8px; font-size:12px;">${new Date(x.date).toLocaleDateString('ar-EG')}</td>
+                                <td style="border:1px solid #ddd; padding:8px; font-size:12px;">${x.note} (${x.type})</td>
+                                <td style="border:1px solid #ddd; padding:8px; font-weight:bold;">${x.val}</td>
+                            </tr>
+                        `).join('')}
+                    </table>
+                    <h3 style="text-align:left; color:#3b82f6; margin-top:20px;">الإجمالي: ${total} ج.م</h3>
+                </div>
+            `;
+            toggleModal('report-modal');
+        }
+    </script>
+</body>
+</html>
+
