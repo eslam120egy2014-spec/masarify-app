@@ -268,9 +268,13 @@
         </div>
     </div>
 
-    <!-- Export Modal (مع أقسام منفصلة للعمل والشخصي) -->
-    <div id="export-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-xl z-[200] hidden flex items-center justify-center p-6">
-        <div class="glass w-full max-w-sm rounded-[2rem] p-8 space-y-6">
+    <!-- Export Modal (مُعدل: إضافة زر إغلاق علوي وجعله قابلاً للتمرير) -->
+    <div id="export-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-xl z-[200] hidden flex items-center justify-center p-6 overflow-y-auto">
+        <div class="glass w-full max-w-sm rounded-[2rem] p-8 space-y-6 relative">
+            <!-- زر إغلاق إضافي واضح في الأعلى -->
+            <button onclick="UI.closeModal('export-modal')" class="absolute top-4 left-4 text-slate-500 hover:text-white transition-colors">
+                <i class="fa-solid fa-xmark text-2xl"></i>
+            </button>
             <div class="text-center space-y-2">
                 <h3 class="text-lg font-black">مركز التقارير والتصدير</h3>
                 <p class="text-xs font-bold text-slate-500">اختر التنسيق المناسب لمشاركة بياناتك</p>
