@@ -3,280 +3,1067 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>مصاريفي - النسخة المضمونة</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="description" content="Premium SaaS Expense Tracking Solution">
+    <title>ExpensePro SaaS Elite</title>
+
+    <!-- PWA Manifest Inline -->
+    <link rel="manifest" href='data:application/manifest+json,{"name":"ExpensePro SaaS Elite","short_name":"ExpensePro","start_url":".","display":"standalone","background_color":"#0f172a","theme_color":"#3b82f6","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/2454/2454282.png","sizes":"512x512","type":"image/png"}]}'>
+
+    <!-- Fonts & Libraries -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
-    <style>
-        body { font-family: 'Cairo', sans-serif; background-color: #f1f5f9; color: #1e293b; touch-action: manipulation; }
-        .card { background: white; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
-        input, select { border: 1px solid #cbd5e1 !important; border-radius: 10px !important; padding: 10px !important; width: 100%; outline: none; background: #fff; }
-        
-        @media print {
-            .no-print { display: none !important; }
-            #printable-area { display: block !important; position: absolute; top: 0; left: 0; width: 100%; background: white; z-index: 9999; }
-        }
-    </style>
-</head>
-<body class="pb-20">
-
-    <!-- Header -->
-    <header class="p-4 bg-white border-b sticky top-0 z-50 flex justify-between items-center no-print">
-        <div class="flex items-center gap-2">
-            <div class="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center text-white shadow-md">
-                <i class="fas fa-wallet"></i>
-            </div>
-            <span class="text-lg font-black tracking-tight">مصاريفي</span>
-        </div>
-        <button onclick="toggleModal('settings-modal')" class="w-10 h-10 flex items-center justify-center text-slate-400">
-            <i class="fas fa-user-circle text-2xl"></i>
-        </button>
-    </header>
-
-    <main class="max-w-md mx-auto p-4 space-y-4 no-print">
-        
-        <!-- Stats -->
-        <div class="grid grid-cols-2 gap-3">
-            <div class="card p-4 bg-blue-600 text-white border-none shadow-blue-200 shadow-lg">
-                <p class="text-[10px] uppercase font-bold opacity-70 mb-1">إجمالي الشهر</p>
-                <div class="flex items-baseline gap-1">
-                    <span id="stat-total" class="text-xl font-black">0</span>
-                    <span class="text-[10px]">ج.م</span>
-                </div>
-            </div>
-            <div class="card p-4 bg-white border-slate-200">
-                <p class="text-[10px] uppercase font-bold text-slate-400 mb-1">رحلات الشهر</p>
-                <p id="stat-count" class="text-xl font-black text-slate-800">0</p>
-            </div>
-        </div>
-
-        <!-- Toolbar -->
-        <div class="card p-3 space-y-3">
-            <input type="date" id="main-date" class="text-center font-bold text-blue-600 border-none bg-slate-50">
-            <div class="grid grid-cols-3 gap-2">
-                <button onclick="shareText()" class="bg-emerald-500 text-white p-3 rounded-xl text-xs font-bold shadow-sm">
-                    <i class="fab fa-whatsapp mb-1 block text-lg"></i> واتساب
-                </button>
-                <button onclick="previewReport('daily')" class="bg-slate-100 text-slate-700 p-3 rounded-xl text-xs font-bold border border-slate-200">
-                    <i class="fas fa-file-invoice mb-1 block text-lg"></i> تقرير يومي
-                </button>
-                <button onclick="previewReport('monthly')" class="bg-slate-800 text-white p-3 rounded-xl text-xs font-bold">
-                    <i class="fas fa-calendar-alt mb-1 block text-lg text-blue-400"></i> تقرير شهري
-                </button>
-            </div>
-        </div>
-
-        <!-- Add Form -->
-        <div class="card p-5">
-            <h3 class="text-sm font-black mb-4 flex items-center gap-2">
-                <span class="w-1 h-3 bg-blue-600 rounded-full"></span> تسجيل حركة
-            </h3>
-            <form id="expense-form" class="space-y-4">
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="text-[10px] font-bold text-slate-400 mb-1 block">المبلغ</label>
-                        <input type="number" id="inp-amount" placeholder="0.00" required step="0.5" class="font-black text-blue-600">
-                    </div>
-                    <div>
-                        <label class="text-[10px] font-bold text-slate-400 mb-1 block">الوسيلة</label>
-                        <select id="inp-type" class="font-bold text-sm">
-                            <option value="باص / ميني باص">🚌 باص / ميني باص</option>
-                            <option value="أوبر / كريم">🚕 أوبر / كريم</option>
-                            <option value="تاكسي">🚕 تاكسي</option>
-                            <option value="مترو">🚇 مترو</option>
-                            <option value="بنزين">⛽ بنزين</option>
-                        </select>
-                    </div>
-                </div>
-                <input type="text" id="inp-note" placeholder="الوجهة (مثال: من البيت للمكتب)" class="text-sm">
-                <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-xl font-black shadow-lg shadow-blue-100">حفظ البيانات</button>
-            </form>
-        </div>
-
-        <!-- History -->
-        <div id="logs-container" class="space-y-2"></div>
-    </main>
-
-    <!-- Modals -->
-    <div id="settings-modal" class="fixed inset-0 bg-slate-900/60 z-[100] hidden flex items-center justify-center p-4 no-print">
-        <div class="card w-full max-w-xs p-6 space-y-4">
-            <h2 class="font-black">بيانات التقارير</h2>
-            <input type="text" id="cfg-name" placeholder="الاسم">
-            <input type="text" id="cfg-job" placeholder="الوظيفة">
-            <input type="text" id="cfg-company" placeholder="الشركة">
-            <button onclick="saveSettings()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold">حفظ وإغلاق</button>
-        </div>
-    </div>
-
-    <!-- Enhanced Report Preview -->
-    <div id="report-modal" class="fixed inset-0 bg-white z-[200] hidden overflow-y-auto no-print">
-        <div class="sticky top-0 p-4 bg-slate-50 border-b flex justify-between items-center">
-            <button onclick="toggleModal('report-modal')" class="text-slate-500 font-bold"><i class="fas fa-times"></i> إغلاق</button>
-            <div class="flex gap-2">
-                <button onclick="window.print()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold">طباعة / حفظ PDF</button>
-            </div>
-        </div>
-        <div id="printable-area" class="p-6 bg-white max-w-2xl mx-auto">
-            <!-- Content -->
-        </div>
-    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <script>
-        let db = JSON.parse(localStorage.getItem('exp_final_db')) || [];
-        let cfg = JSON.parse(localStorage.getItem('exp_final_cfg')) || { name: '', job: '', company: '' };
-
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('main-date').value = new Date().toISOString().split('T')[0];
-            document.getElementById('cfg-name').value = cfg.name;
-            document.getElementById('cfg-job').value = cfg.job;
-            document.getElementById('cfg-company').value = cfg.company;
-            render();
-        });
-
-        function toggleModal(id) { document.getElementById(id).classList.toggle('hidden'); }
-
-        function saveSettings() {
-            cfg = {
-                name: document.getElementById('cfg-name').value,
-                job: document.getElementById('cfg-job').value,
-                company: document.getElementById('cfg-company').value
-            };
-            localStorage.setItem('exp_final_cfg', JSON.stringify(cfg));
-            toggleModal('settings-modal');
-        }
-
-        document.getElementById('expense-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const entry = {
-                id: Date.now(),
-                val: parseFloat(document.getElementById('inp-amount').value),
-                type: document.getElementById('inp-type').value,
-                note: document.getElementById('inp-note').value || 'انتقالات عمل',
-                date: new Date().toISOString()
-            };
-            db.unshift(entry);
-            localStorage.setItem('exp_final_db', JSON.stringify(db));
-            e.target.reset();
-            render();
-        });
-
-        function deleteItem(id) {
-            if(confirm('حذف؟')) {
-                db = db.filter(x => x.id !== id);
-                localStorage.setItem('exp_final_db', JSON.stringify(db));
-                render();
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        surface: { dark: '#0f172a', light: '#f8fafc' },
+                        brand: { primary: '#3b82f6', secondary: '#8b5cf6', accent: '#f59e0b' }
+                    },
+                    fontFamily: { sans: ['Cairo', 'sans-serif'] }
+                }
             }
         }
+    </script>
 
-        function render() {
-            const list = document.getElementById('logs-container');
-            const now = new Date();
-            const monthly = db.filter(x => {
-                const d = new Date(x.date);
-                return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-            });
+    <style>
+        :root { --glass-bg: rgba(255, 255, 255, 0.03); --glass-border: rgba(255, 255, 255, 0.1); }
+        .light { --glass-bg: rgba(255, 255, 255, 0.7); --glass-border: rgba(0, 0, 0, 0.05); }
 
-            document.getElementById('stat-total').innerText = monthly.reduce((s,x)=>s+x.val, 0).toLocaleString();
-            document.getElementById('stat-count').innerText = monthly.length;
+        body { 
+            background: #0f172a; 
+            transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        body.light { 
+            background: #f1f5f9; 
+            color: #0f172a;
+        }
+        body.dark {
+            color: #ffffff;
+        }
 
-            list.innerHTML = db.map(x => `
-                <div class="card p-3 flex justify-between items-center border-slate-200">
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px) saturate(180%);
+            -webkit-backdrop-filter: blur(16px) saturate(180%);
+            border: 1px solid var(--glass-border);
+        }
+
+        .premium-gradient { background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); }
+        
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        
+        .tap-scale { transition: transform 0.1s ease; }
+        .tap-scale:active { transform: scale(0.96); }
+
+        .swipe-container { overflow: hidden; position: relative; }
+        .swipe-actions { position: absolute; right: 0; top: 0; bottom: 0; display: flex; transform: translateX(100%); transition: transform 0.2s ease; }
+        
+        canvas { filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1)); }
+
+        .pin-dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid #3b82f6; transition: all 0.2s; }
+        .pin-dot.active { background: #3b82f6; transform: scale(1.2); }
+
+        /* تحسين ألوان المحفظة - النصوص بيضاء في الوضع الداكن ورمادي فاتح في الفاتح */
+        .wallet-card-cash { background: linear-gradient(145deg, #10b98130, #05966930); border: 1px solid #10b98150; }
+        .wallet-card-visa { background: linear-gradient(145deg, #3b82f630, #2563eb30); border: 1px solid #3b82f650; }
+        .wallet-card-vodafone { background: linear-gradient(145deg, #f59e0b30, #d9770630); border: 1px solid #f59e0b50; }
+        .dark .wallet-card-cash { background: linear-gradient(145deg, #10b98120, #05966920); border-color: #10b98180; }
+        .dark .wallet-card-visa { background: linear-gradient(145deg, #3b82f620, #2563eb20); border-color: #3b82f680; }
+        .dark .wallet-card-vodafone { background: linear-gradient(145deg, #f59e0b20, #d9770620); border-color: #f59e0b80; }
+        
+        /* ألوان النصوص داخل المحفظة */
+        .wallet-label, .wallet-balance { color: #fff; }
+        .light .wallet-label, .light .wallet-balance { color: #1e293b; }
+    </style>
+</head>
+<body class="dark font-sans overflow-x-hidden">
+
+    <!-- Main Navigation Top -->
+    <nav class="fixed top-0 inset-x-0 z-50 glass border-b px-6 py-4 flex justify-between items-center transition-all">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 premium-gradient rounded-xl flex items-center justify-center shadow-lg tap-scale">
+                <i class="fa-solid fa-fingerprint text-white text-lg"></i>
+            </div>
+            <div>
+                <h2 class="text-sm font-black dark:text-white light:text-slate-900 leading-none">إيليت سـاس</h2>
+                <span id="header-status" class="text-[9px] font-bold text-emerald-500 uppercase tracking-widest mt-1 flex items-center gap-1">
+                    <span class="w-1 h-1 bg-emerald-500 rounded-full animate-ping"></span> متصل بالخادم
+                </span>
+            </div>
+        </div>
+        <div class="flex items-center gap-2">
+            <!-- أيقونة التصدير (في الأعلى) -->
+            <button onclick="UI.showModal('export-modal')" class="w-9 h-9 rounded-lg glass flex items-center justify-center text-slate-400" title="تصدير">
+                <i class="fa-solid fa-file-export"></i>
+            </button>
+            <button onclick="UI.toggleAmountVisibility()" class="w-9 h-9 rounded-lg glass flex items-center justify-center text-slate-400">
+                <i id="eye-icon" class="fa-solid fa-eye"></i>
+            </button>
+            <button onclick="UI.toggleTheme()" class="w-9 h-9 rounded-lg glass flex items-center justify-center text-slate-400">
+                <i id="theme-icon" class="fa-solid fa-moon"></i>
+            </button>
+            <button onclick="UI.showModal('settings-modal')" class="w-9 h-9 rounded-lg glass flex items-center justify-center text-slate-400">
+                <i class="fa-solid fa-gear"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- App Content Wrapper -->
+    <main id="app-content" class="pt-24 pb-32 px-4 max-w-4xl mx-auto space-y-6">
+
+        <!-- Budget & High-Level Summary -->
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="glass p-6 rounded-[2.5rem] relative overflow-hidden group">
+                <div class="absolute -right-4 -top-4 w-24 h-24 bg-brand-primary opacity-5 blur-3xl group-hover:opacity-20 transition-all"></div>
+                <div class="flex justify-between items-start mb-6">
+                    <div>
+                        <p class="text-[10px] font-black text-brand-primary uppercase tracking-widest mb-1">الميزانية الشخصية</p>
+                        <h3 id="personal-budget-label" class="text-3xl font-black dark:text-white light:text-slate-900 tracking-tighter">0.00</h3>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-brand-primary/10 flex items-center justify-center text-brand-primary">
+                        <i class="fa-solid fa-wallet"></i>
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    <div class="flex justify-between text-[10px] font-bold text-slate-400">
+                        <span>المستهلك من الميزانية</span>
+                        <span id="personal-budget-percent">0%</span>
+                    </div>
+                    <div class="h-1.5 w-full bg-slate-800/50 rounded-full overflow-hidden">
+                        <div id="personal-budget-progress" class="h-full premium-gradient transition-all duration-700" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Insight Card -->
+            <div class="glass p-6 rounded-[2.5rem] border-brand-secondary/20">
+                <div class="flex justify-between items-start mb-4">
+                    <h4 class="text-xs font-black text-brand-secondary uppercase tracking-widest">تحليلات ذكية</h4>
+                    <i class="fa-solid fa-wand-magic-sparkles text-brand-secondary"></i>
+                </div>
+                <div id="smart-insight-container" class="space-y-3">
                     <div class="flex items-center gap-3">
-                        <div class="text-lg">${x.type.includes('باص') ? '🚌' : '🚕'}</div>
-                        <div>
-                            <p class="font-bold text-xs text-slate-800">${x.note}</p>
-                            <p class="text-[9px] text-slate-400 font-bold">${new Date(x.date).toLocaleDateString('ar-EG')} - ${x.type}</p>
+                        <div class="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500 text-xs">
+                            <i class="fa-solid fa-chart-line"></i>
                         </div>
+                        <p id="insight-forecast" class="text-[11px] font-bold text-slate-400">تحليل الإنفاق المتوقع...</p>
                     </div>
                     <div class="flex items-center gap-3">
-                        <span class="font-black text-blue-600 text-sm">${x.val}</span>
-                        <button onclick="deleteItem(${x.id})" class="text-slate-300 px-2"><i class="fas fa-trash"></i></button>
+                        <div class="w-8 h-8 rounded-lg bg-brand-accent/10 flex items-center justify-center text-brand-accent text-xs">
+                            <i class="fa-solid fa-fire-flame-curved"></i>
+                        </div>
+                        <p id="insight-category" class="text-[11px] font-bold text-slate-400">الفئة الأعلى استهلاكاً...</p>
                     </div>
                 </div>
-            `).join('');
-        }
+            </div>
+        </section>
 
-        function shareText() {
-            const dVal = document.getElementById('main-date').value;
-            const target = new Date(dVal).toDateString();
-            const daily = db.filter(x => new Date(x.date).toDateString() === target);
+        <!-- Charts Section -->
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="glass p-5 rounded-3xl md:col-span-2">
+                <h4 class="text-xs font-black mb-4 uppercase text-slate-500">منحنى الإنفاق الشهري</h4>
+                <canvas id="lineChart" height="120"></canvas>
+            </div>
+            <div class="glass p-5 rounded-3xl">
+                <h4 class="text-xs font-black mb-4 uppercase text-slate-500">توزيع الفئات</h4>
+                <canvas id="pieChart" height="200"></canvas>
+            </div>
+        </section>
+
+        <!-- Advanced Filter & Search -->
+        <section class="glass p-4 rounded-3xl flex flex-wrap gap-3 items-center">
+            <div class="relative flex-1 min-w-[200px]">
+                <i class="fa-solid fa-magnifying-glass absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+                <input type="text" id="search-input" oninput="UI.refreshList()" placeholder="بحث في السجل..." class="w-full h-11 bg-slate-900/40 rounded-xl pr-10 pl-4 text-xs font-bold border border-white/5 focus:border-brand-primary outline-none transition-all">
+            </div>
+            <select id="filter-type" onchange="UI.refreshList()" class="h-11 px-4 bg-slate-900/40 rounded-xl text-xs font-bold border border-white/5 outline-none">
+                <option value="all">كل الأنواع</option>
+                <option value="work">انتقالات عمل</option>
+                <option value="personal">مصروفات شخصية</option>
+            </select>
+            <div class="flex gap-2">
+                <button onclick="UI.showModal('date-range-modal')" class="h-11 px-4 glass rounded-xl text-[10px] font-black uppercase"><i class="fa-solid fa-calendar-days ml-2"></i>النطاق الزمني</button>
+            </div>
+        </section>
+
+        <!-- Dynamic List -->
+        <section id="entries-list" class="space-y-3">
+            <!-- Items injected by JS -->
+        </section>
+
+    </main>
+
+    <!-- Bottom Action Dock -->
+    <div class="fixed bottom-0 inset-x-0 h-24 glass border-t flex justify-around items-center px-10 z-[60]">
+        <button onclick="UI.switchTab('dashboard')" class="flex flex-col items-center gap-1 text-[10px] font-black text-brand-primary">
+            <i class="fa-solid fa-house-chimney text-xl"></i>
+            <span>الرئيسية</span>
+        </button>
+        <button onclick="UI.showModal('add-modal')" class="w-16 h-16 premium-gradient rounded-full -mt-12 flex items-center justify-center text-white text-2xl shadow-2xl tap-scale border-[6px] border-[#0f172a] dark:border-[#0f172a] light:border-[#f1f5f9]">
+            <i class="fa-solid fa-plus"></i>
+        </button>
+        <!-- زر المحفظة في الأسفل -->
+        <button onclick="WalletAuth.showAuth()" class="flex flex-col items-center gap-1 text-[10px] font-black text-slate-500">
+            <i class="fa-solid fa-wallet text-xl"></i>
+            <span>محفظة</span>
+        </button>
+    </div>
+
+    <!-- Modals -->
+    <!-- Add/Edit Transaction -->
+    <div id="add-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-xl z-[200] hidden flex items-end md:items-center justify-center p-4">
+        <div class="glass w-full max-w-lg rounded-[2.5rem] p-8 space-y-6 animate-in slide-in-from-bottom-10 duration-300">
+            <div class="flex justify-between items-center">
+                <h3 id="modal-title" class="text-xl font-black">إضافة معاملة جديدة</h3>
+                <button onclick="UI.closeModal('add-modal')" class="text-slate-500"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
             
-            if(daily.length === 0) return alert('لا يوجد بيانات');
+            <div class="flex p-1 bg-slate-900/50 rounded-2xl">
+                <button onclick="UI.setFormSection('work')" id="form-tab-work" class="flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-brand-primary text-white transition-all">العمل</button>
+                <button onclick="UI.setFormSection('personal')" id="form-tab-personal" class="flex-1 py-3 rounded-xl font-black text-[10px] uppercase text-slate-500 transition-all">الشخصي</button>
+            </div>
 
-            let total = 0;
-            let txt = `📋 تقرير مصروفات: ${new Date(dVal).toLocaleDateString('ar-EG')}\n`;
-            txt += `👤 الموظف: ${cfg.name || '---'}\n`;
-            txt += `----------------------\n`;
-            daily.forEach(x => {
-                total += x.val;
-                txt += `• ${x.note}: ${x.val} ج.م\n`;
-            });
-            txt += `----------------------\n`;
-            txt += `💰 الإجمالي: ${total} ج.م`;
-
-            // Copy to clipboard fallback
-            const dummy = document.createElement("textarea");
-            document.body.appendChild(dummy);
-            dummy.value = txt;
-            dummy.select();
-            document.execCommand("copy");
-            document.body.removeChild(dummy);
-
-            alert('تم نسخ نص التقرير! يمكنك الآن لصقه في الواتساب.');
-            
-            // Try to open WhatsApp anyway
-            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(txt)}`, '_blank');
-        }
-
-        function previewReport(type) {
-            const dVal = document.getElementById('main-date').value;
-            const target = new Date(dVal);
-            let filtered = [];
-            let label = "";
-
-            if(type === 'daily') {
-                filtered = db.filter(x => new Date(x.date).toDateString() === target.toDateString());
-                label = "يوم: " + target.toLocaleDateString('ar-EG');
-            } else {
-                filtered = db.filter(x => {
-                    const d = new Date(x.date);
-                    return d.getMonth() === target.getMonth() && d.getFullYear() === target.getFullYear();
-                });
-                label = "شهر: " + target.toLocaleDateString('ar-EG', {month:'long', year:'numeric'});
-            }
-
-            if(filtered.length === 0) return alert('لا توجد بيانات');
-
-            const total = filtered.reduce((s,x)=>s+x.val, 0);
-            
-            document.getElementById('printable-area').innerHTML = `
-                <div style="font-family:'Cairo'; border:2px solid #3b82f6; padding:20px; border-radius:10px;">
-                    <h2 style="text-align:center; color:#3b82f6; border-bottom:1px solid #eee; padding-bottom:10px;">تقرير انتقالات</h2>
-                    <p><strong>الاسم:</strong> ${cfg.name || '---'}</p>
-                    <p><strong>الفترة:</strong> ${label}</p>
-                    <table style="width:100%; border-collapse:collapse; margin-top:20px;">
-                        <tr style="background:#f1f5f9;">
-                            <th style="border:1px solid #ddd; padding:8px;">التاريخ</th>
-                            <th style="border:1px solid #ddd; padding:8px;">البيان</th>
-                            <th style="border:1px solid #ddd; padding:8px;">المبلغ</th>
-                        </tr>
-                        ${filtered.map(x => `
-                            <tr>
-                                <td style="border:1px solid #ddd; padding:8px; font-size:12px;">${new Date(x.date).toLocaleDateString('ar-EG')}</td>
-                                <td style="border:1px solid #ddd; padding:8px; font-size:12px;">${x.note} (${x.type})</td>
-                                <td style="border:1px solid #ddd; padding:8px; font-weight:bold;">${x.val}</td>
-                            </tr>
-                        `).join('')}
-                    </table>
-                    <h3 style="text-align:left; color:#3b82f6; margin-top:20px;">الإجمالي: ${total} ج.م</h3>
+            <form id="main-form" class="space-y-5">
+                <input type="hidden" id="entry-id">
+                <div class="relative">
+                    <input type="number" id="f-amount" step="0.5" required placeholder="0.00" class="w-full h-20 bg-transparent text-center text-5xl font-black outline-none placeholder:text-slate-800 text-brand-primary">
                 </div>
-            `;
-            toggleModal('report-modal');
-        }
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-1.5">
+                        <label class="text-[10px] font-black text-slate-500 uppercase px-1">التصنيف</label>
+                        <select id="f-category" class="w-full h-12 bg-slate-900/40 border border-white/5 rounded-xl px-4 text-xs font-bold outline-none"></select>
+                    </div>
+                    <div class="space-y-1.5">
+                        <label class="text-[10px] font-black text-slate-500 uppercase px-1">التاريخ</label>
+                        <input type="date" id="f-date" class="w-full h-12 bg-slate-900/40 border border-white/5 rounded-xl px-4 text-xs font-bold outline-none uppercase">
+                    </div>
+                </div>
+
+                <!-- حقل مخصص لـ "أخرى" يظهر عند الحاجة -->
+                <div id="custom-category-container" class="space-y-1.5 hidden">
+                    <label class="text-[10px] font-black text-slate-500 uppercase px-1">اكتب التصنيف الجديد</label>
+                    <input type="text" id="f-custom-category" placeholder="مثلاً: هدايا" class="w-full h-12 bg-slate-900/40 border border-white/5 rounded-xl px-4 text-xs font-bold outline-none">
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="text-[10px] font-black text-slate-500 uppercase px-1">ملاحظات إضافية</label>
+                    <input type="text" id="f-note" placeholder="مثلاً: من مدينة نصر إلى المعادي..." class="w-full h-12 bg-slate-900/40 border border-white/5 rounded-xl px-4 text-xs font-bold outline-none">
+                </div>
+
+                <button type="submit" class="w-full h-16 premium-gradient rounded-2xl text-white font-black text-lg shadow-xl shadow-brand-primary/20">تأكيد العملية</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Export Modal (مع أقسام منفصلة للعمل والشخصي) -->
+    <div id="export-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-xl z-[200] hidden flex items-center justify-center p-6">
+        <div class="glass w-full max-w-sm rounded-[2rem] p-8 space-y-6">
+            <div class="text-center space-y-2">
+                <h3 class="text-lg font-black">مركز التقارير والتصدير</h3>
+                <p class="text-xs font-bold text-slate-500">اختر التنسيق المناسب لمشاركة بياناتك</p>
+            </div>
+            
+            <div class="grid grid-cols-1 gap-3">
+                <!-- تصدير كامل -->
+                <div class="text-[10px] font-black text-slate-400 text-right pr-2">📊 تقارير شاملة</div>
+                <button onclick="Export.toWhatsApp()" class="flex items-center gap-4 p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 font-black text-xs tap-scale">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center text-white"><i class="fa-brands fa-whatsapp text-xl"></i></div>
+                    تقرير واتساب (كل المصروفات)
+                </button>
+                <button onclick="Export.toPDF()" class="flex items-center gap-4 p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500 font-black text-xs tap-scale">
+                    <div class="w-10 h-10 rounded-xl bg-red-500 flex items-center justify-center text-white"><i class="fa-solid fa-file-pdf text-xl"></i></div>
+                    تصدير PDF شامل
+                </button>
+                <button onclick="Export.toExcel()" class="flex items-center gap-4 p-4 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-500 font-black text-xs tap-scale">
+                    <div class="w-10 h-10 rounded-xl bg-blue-500 flex items-center justify-center text-white"><i class="fa-solid fa-file-excel text-xl"></i></div>
+                    تصدير Excel كامل
+                </button>
+
+                <!-- تصدير العمل -->
+                <div class="text-[10px] font-black text-brand-primary text-right pr-2 mt-2">💼 قسم العمل</div>
+                <button onclick="Export.toWorkWhatsApp()" class="flex items-center gap-4 p-4 rounded-2xl bg-brand-primary/10 border border-brand-primary/20 text-brand-primary font-black text-xs tap-scale">
+                    <div class="w-10 h-10 rounded-xl bg-brand-primary flex items-center justify-center text-white"><i class="fa-brands fa-whatsapp text-xl"></i></div>
+                    واتساب (العمل)
+                </button>
+                <button onclick="Export.toWorkPDF()" class="flex items-center gap-4 p-4 rounded-2xl bg-brand-primary/10 border border-brand-primary/20 text-brand-primary font-black text-xs tap-scale">
+                    <div class="w-10 h-10 rounded-xl bg-brand-primary flex items-center justify-center text-white"><i class="fa-solid fa-file-pdf text-xl"></i></div>
+                    PDF العمل
+                </button>
+                <button onclick="Export.toWorkExcel()" class="flex items-center gap-4 p-4 rounded-2xl bg-brand-primary/10 border border-brand-primary/20 text-brand-primary font-black text-xs tap-scale">
+                    <div class="w-10 h-10 rounded-xl bg-brand-primary flex items-center justify-center text-white"><i class="fa-solid fa-file-excel text-xl"></i></div>
+                    Excel العمل
+                </button>
+
+                <!-- تصدير الشخصي -->
+                <div class="text-[10px] font-black text-brand-secondary text-right pr-2 mt-2">👤 قسم الشخصي</div>
+                <button onclick="Export.toPersonalWhatsApp()" class="flex items-center gap-4 p-4 rounded-2xl bg-brand-secondary/10 border border-brand-secondary/20 text-brand-secondary font-black text-xs tap-scale">
+                    <div class="w-10 h-10 rounded-xl bg-brand-secondary flex items-center justify-center text-white"><i class="fa-brands fa-whatsapp text-xl"></i></div>
+                    واتساب (الشخصي)
+                </button>
+                <button onclick="Export.toPersonalPDF()" class="flex items-center gap-4 p-4 rounded-2xl bg-brand-secondary/10 border border-brand-secondary/20 text-brand-secondary font-black text-xs tap-scale">
+                    <div class="w-10 h-10 rounded-xl bg-brand-secondary flex items-center justify-center text-white"><i class="fa-solid fa-file-pdf text-xl"></i></div>
+                    PDF الشخصي
+                </button>
+                <button onclick="Export.toPersonalExcel()" class="flex items-center gap-4 p-4 rounded-2xl bg-brand-secondary/10 border border-brand-secondary/20 text-brand-secondary font-black text-xs tap-scale">
+                    <div class="w-10 h-10 rounded-xl bg-brand-secondary flex items-center justify-center text-white"><i class="fa-solid fa-file-excel text-xl"></i></div>
+                    Excel الشخصي
+                </button>
+
+                <div class="grid grid-cols-2 gap-3 mt-2">
+                    <button onclick="Export.backupJSON()" class="py-3 rounded-xl glass text-[10px] font-black uppercase text-slate-400">نسخة احتياطية</button>
+                    <label class="py-3 rounded-xl glass text-[10px] font-black uppercase text-slate-400 text-center cursor-pointer">
+                        استيراد بيانات
+                        <input type="file" id="import-json" class="hidden" onchange="Export.importJSON(event)">
+                    </label>
+                </div>
+            </div>
+            <button onclick="UI.closeModal('export-modal')" class="w-full py-4 text-xs font-black text-slate-600">إغلاق</button>
+        </div>
+    </div>
+
+    <!-- Settings Modal (مع إضافة إعدادات الرقم السري للمحفظة) -->
+    <div id="settings-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-xl z-[200] hidden flex items-center justify-center p-6">
+        <div class="glass w-full max-w-md rounded-[2.5rem] p-10 space-y-8 overflow-y-auto max-h-[90vh] no-scrollbar">
+            <div class="flex flex-col items-center">
+                <div class="w-24 h-24 rounded-[2rem] premium-gradient flex items-center justify-center shadow-2xl mb-4 relative">
+                    <i class="fa-solid fa-user-tie text-white text-4xl"></i>
+                    <div class="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-emerald-500 border-4 border-slate-950 flex items-center justify-center text-[10px] text-white">
+                        <i class="fa-solid fa-check"></i>
+                    </div>
+                </div>
+                <h3 class="text-xl font-black">الملف الضريبي والوظيفي</h3>
+            </div>
+
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-black text-slate-500 uppercase px-1">الاسم الكامل</label>
+                        <input type="text" id="s-name" class="w-full h-12 bg-slate-900/40 rounded-xl px-4 text-xs font-bold outline-none border border-white/5">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-black text-slate-500 uppercase px-1">الشركة</label>
+                        <input type="text" id="s-company" class="w-full h-12 bg-slate-900/40 rounded-xl px-4 text-xs font-bold outline-none border border-white/5">
+                    </div>
+                </div>
+                
+                <div class="space-y-1">
+                    <label class="text-[10px] font-black text-slate-500 uppercase px-1">ميزانية العمل الشهرية</label>
+                    <input type="number" id="s-budget-work" class="w-full h-12 bg-slate-900/40 rounded-xl px-4 text-xs font-bold outline-none border border-white/5">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[10px] font-black text-slate-500 uppercase px-1">ميزانية الشخصي الشهرية</label>
+                    <input type="number" id="s-budget-pers" class="w-full h-12 bg-slate-900/40 rounded-xl px-4 text-xs font-bold outline-none border border-white/5">
+                </div>
+
+                <!-- إعدادات الرقم السري للمحفظة -->
+                <div class="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/20 space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="text-[10px] font-black text-amber-500">🔒 حماية المحفظة برقم سري</span>
+                        <input type="checkbox" id="s-wallet-pin-enabled" class="toggle" checked>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-black text-slate-500 uppercase block mb-1">الرقم السري للمحفظة (4 أرقام)</label>
+                        <input type="password" id="s-wallet-pin" maxlength="4" placeholder="أدخل 4 أرقام" class="w-full h-10 bg-slate-950 rounded-lg px-4 text-xs font-bold outline-none border border-white/5" value="0000">
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex gap-3">
+                <button onclick="UI.saveSettings()" class="flex-1 h-14 premium-gradient rounded-2xl font-black text-white shadow-lg">حفظ التغييرات</button>
+                <button onclick="UI.closeModal('settings-modal')" class="flex-1 h-14 glass rounded-2xl font-black text-slate-400">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal لإدخال رمز المحفظة -->
+    <div id="wallet-auth-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-xl z-[300] hidden flex flex-col items-center justify-center p-6">
+        <div class="glass w-full max-w-xs rounded-[2.5rem] p-8 text-center space-y-6">
+            <div class="w-16 h-16 rounded-full bg-amber-500/20 mx-auto flex items-center justify-center text-amber-500 text-2xl">
+                <i class="fa-solid fa-lock"></i>
+            </div>
+            <h3 class="text-lg font-black">المحفظة السرية</h3>
+            <p class="text-xs font-bold text-slate-500">أدخل الرقم السري للمتابعة</p>
+            <div class="flex gap-3 justify-center mb-2" id="wallet-pin-dots">
+                <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+            </div>
+            <div class="grid grid-cols-3 gap-3 mt-4">
+                <!-- Numpad -->
+                <button onclick="WalletAuth.push(1)" class="w-14 h-14 rounded-full glass flex items-center justify-center text-xl font-black">1</button>
+                <button onclick="WalletAuth.push(2)" class="w-14 h-14 rounded-full glass flex items-center justify-center text-xl font-black">2</button>
+                <button onclick="WalletAuth.push(3)" class="w-14 h-14 rounded-full glass flex items-center justify-center text-xl font-black">3</button>
+                <button onclick="WalletAuth.push(4)" class="w-14 h-14 rounded-full glass flex items-center justify-center text-xl font-black">4</button>
+                <button onclick="WalletAuth.push(5)" class="w-14 h-14 rounded-full glass flex items-center justify-center text-xl font-black">5</button>
+                <button onclick="WalletAuth.push(6)" class="w-14 h-14 rounded-full glass flex items-center justify-center text-xl font-black">6</button>
+                <button onclick="WalletAuth.push(7)" class="w-14 h-14 rounded-full glass flex items-center justify-center text-xl font-black">7</button>
+                <button onclick="WalletAuth.push(8)" class="w-14 h-14 rounded-full glass flex items-center justify-center text-xl font-black">8</button>
+                <button onclick="WalletAuth.push(9)" class="w-14 h-14 rounded-full glass flex items-center justify-center text-xl font-black">9</button>
+                <button onclick="WalletAuth.clear()" class="w-14 h-14 rounded-full glass flex items-center justify-center text-sm font-bold text-red-500">مسح</button>
+                <button onclick="WalletAuth.push(0)" class="w-14 h-14 rounded-full glass flex items-center justify-center text-xl font-black">0</button>
+                <button onclick="WalletAuth.back()" class="w-14 h-14 rounded-full glass flex items-center justify-center text-xl"><i class="fa-solid fa-delete-left"></i></button>
+            </div>
+            <button onclick="UI.closeModal('wallet-auth-modal')" class="text-xs font-black text-slate-600 mt-4">إلغاء</button>
+        </div>
+    </div>
+
+    <!-- Modal إدارة المحفظة (تم تحسين الألوان - النصوص بيضاء) -->
+    <div id="wallet-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-xl z-[300] hidden flex items-center justify-center p-6">
+        <div class="glass w-full max-w-sm rounded-[2.5rem] p-8 space-y-6">
+            <div class="flex justify-between items-center">
+                <h3 class="text-xl font-black flex items-center gap-2"><i class="fa-solid fa-wallet text-amber-500"></i> رصيد المحفظة</h3>
+                <button onclick="UI.closeModal('wallet-modal')" class="text-slate-500"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div class="space-y-4">
+                <!-- كاش - ألوان محسنة مع نصوص بيضاء -->
+                <div class="flex items-center justify-between p-4 rounded-2xl wallet-card-cash">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-emerald-500/30 flex items-center justify-center text-emerald-500 text-lg">
+                            <i class="fa-solid fa-money-bill-wave"></i>
+                        </div>
+                        <span class="text-sm font-black wallet-label">كاش (نقدي)</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span id="wallet-cash" class="text-sm font-black wallet-balance">0</span>
+                        <button onclick="Wallet.modify('cash', 'add')" class="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 hover:bg-emerald-500/40"><i class="fa-solid fa-plus"></i></button>
+                        <button onclick="Wallet.modify('cash', 'sub')" class="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center text-red-400 hover:bg-red-500/40"><i class="fa-solid fa-minus"></i></button>
+                    </div>
+                </div>
+                <!-- فيزا - ألوان محسنة مع نصوص بيضاء -->
+                <div class="flex items-center justify-between p-4 rounded-2xl wallet-card-visa">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-blue-500/30 flex items-center justify-center text-blue-500 text-lg">
+                            <i class="fa-brands fa-cc-visa"></i>
+                        </div>
+                        <span class="text-sm font-black wallet-label">فيزا</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span id="wallet-visa" class="text-sm font-black wallet-balance">0</span>
+                        <button onclick="Wallet.modify('visa', 'add')" class="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 hover:bg-blue-500/40"><i class="fa-solid fa-plus"></i></button>
+                        <button onclick="Wallet.modify('visa', 'sub')" class="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center text-red-400 hover:bg-red-500/40"><i class="fa-solid fa-minus"></i></button>
+                    </div>
+                </div>
+                <!-- فودافون كاش - ألوان محسنة مع نصوص بيضاء -->
+                <div class="flex items-center justify-between p-4 rounded-2xl wallet-card-vodafone">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-amber-500/30 flex items-center justify-center text-amber-600 dark:text-amber-400 text-lg">
+                            <i class="fa-solid fa-mobile-screen-button"></i>
+                        </div>
+                        <span class="text-sm font-black wallet-label">فودافون كاش</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span id="wallet-vodafone" class="text-sm font-black wallet-balance">0</span>
+                        <button onclick="Wallet.modify('vodafone', 'add')" class="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-400 hover:bg-amber-500/40"><i class="fa-solid fa-plus"></i></button>
+                        <button onclick="Wallet.modify('vodafone', 'sub')" class="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center text-red-400 hover:bg-red-500/40"><i class="fa-solid fa-minus"></i></button>
+                    </div>
+                </div>
+            </div>
+            <button onclick="UI.closeModal('wallet-modal')" class="w-full py-4 text-xs font-black text-slate-600">تم</button>
+        </div>
+    </div>
+
+    <!-- Toast Component -->
+    <div id="toast" class="fixed top-10 left-1/2 -translate-x-1/2 px-6 py-4 rounded-2xl glass shadow-2xl opacity-0 translate-y-[-20px] transition-all z-[999] flex items-center gap-3">
+        <div id="toast-icon" class="w-8 h-8 rounded-full flex items-center justify-center"></div>
+        <p id="toast-msg" class="text-xs font-black"></p>
+    </div>
+
+    <!-- Scripts Architecture -->
+    <script>
+        (function() {
+            // Storage
+            const Storage = {
+                prefix: 'ep_elite_',
+                save: (key, val) => localStorage.setItem(Storage.prefix + key, JSON.stringify(val)),
+                get: (key) => {
+                    const data = localStorage.getItem(Storage.prefix + key);
+                    try { return data ? JSON.parse(data) : null; } catch(e) { return null; }
+                }
+            };
+
+            // Data
+            const Data = {
+                entries: Storage.get('entries') || [],
+                config: Storage.get('config') || { 
+                    name: 'Salma', 
+                    company: 'Elite Corp', 
+                    budgetWork: 2000, 
+                    budgetPers: 5000,
+                    isDark: true,
+                    hideAmounts: false,
+                    walletBalances: { cash: 0, visa: 0, vodafone: 0 },
+                    walletPinEnabled: true,
+                    walletPin: '0000'
+                },
+
+                // دالة مساعدة للتحقق من رصيد الكاش وخصمه
+                deductFromCash: function(amount, oldAmount = 0) {
+                    const diff = amount - oldAmount;
+                    if (diff <= 0) return true;
+                    if (Data.config.walletBalances.cash >= diff) {
+                        Data.config.walletBalances.cash -= diff;
+                        return true;
+                    } else {
+                        return false;
+                    }
+                },
+
+                addEntry: function(entry) {
+                    if (!this.deductFromCash(entry.amount)) {
+                        UI.notify('⚠️ رصيد الكاش غير كافٍ لإتمام هذه المعاملة', 'error');
+                        return false;
+                    }
+                    Data.entries.unshift({ id: Date.now(), ...entry });
+                    Data.save();
+                    return true;
+                },
+                updateEntry: function(id, updated) {
+                    const idx = Data.entries.findIndex(e => e.id === id);
+                    if(idx !== -1) {
+                        const oldAmount = Data.entries[idx].amount;
+                        if (!this.deductFromCash(updated.amount, oldAmount)) {
+                            UI.notify('⚠️ رصيد الكاش غير كافٍ لتعديل هذه المعاملة', 'error');
+                            return false;
+                        }
+                        if (updated.amount < oldAmount) {
+                            Data.config.walletBalances.cash += (oldAmount - updated.amount);
+                        }
+                        Data.entries[idx] = { ...Data.entries[idx], ...updated };
+                        Data.save();
+                        return true;
+                    }
+                    return false;
+                },
+                deleteEntry: function(id) {
+                    const idx = Data.entries.findIndex(e => e.id === id);
+                    if(idx !== -1) {
+                        const amount = Data.entries[idx].amount;
+                        Data.config.walletBalances.cash += amount;
+                        Data.entries = Data.entries.filter(e => e.id !== id);
+                        Data.save();
+                        return true;
+                    }
+                    return false;
+                },
+                save: () => {
+                    Storage.save('entries', Data.entries);
+                    Storage.save('config', Data.config);
+                    UI.refresh();
+                },
+                getFiltered: (query = '', type = 'all') => {
+                    return Data.entries.filter(e => {
+                        const matchesType = type === 'all' || e.section === type;
+                        const matchesSearch = e.note.toLowerCase().includes(query.toLowerCase()) || 
+                                              e.category.toLowerCase().includes(query.toLowerCase());
+                        return matchesType && matchesSearch;
+                    });
+                }
+            };
+
+            // Analytics
+            const Analytics = {
+                getMonthlyStats: (month, year) => {
+                    const filtered = Data.entries.filter(e => {
+                        const d = new Date(e.date);
+                        return d.getMonth() === month && d.getFullYear() === year;
+                    });
+                    const work = filtered.filter(e => e.section === 'work').reduce((s, e) => s + e.amount, 0);
+                    const pers = filtered.filter(e => e.section === 'personal').reduce((s, e) => s + e.amount, 0);
+                    return { work, pers, total: work + pers };
+                },
+                getCategoryDist: () => {
+                    const dist = {};
+                    Data.entries.forEach(e => dist[e.category] = (dist[e.category] || 0) + e.amount);
+                    return dist;
+                },
+                getForecast: () => {
+                    const now = new Date();
+                    const daysPassed = now.getDate();
+                    const totalDays = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+                    const spent = Analytics.getMonthlyStats(now.getMonth(), now.getFullYear()).total;
+                    const dailyAvg = spent / daysPassed;
+                    return { dailyAvg, expectedTotal: dailyAvg * totalDays, growth: 0 };
+                }
+            };
+
+            // Wallet Module
+            const Wallet = {
+                showWallet: function() {
+                    document.getElementById('wallet-cash').innerText = Data.config.walletBalances.cash;
+                    document.getElementById('wallet-visa').innerText = Data.config.walletBalances.visa;
+                    document.getElementById('wallet-vodafone').innerText = Data.config.walletBalances.vodafone;
+                    UI.showModal('wallet-modal');
+                },
+                modify: function(type, action) {
+                    let amount = prompt(`أدخل المبلغ لـ ${action === 'add' ? 'إضافته إلى' : 'سحبه من'} ${type === 'cash' ? 'الكاش' : (type === 'visa' ? 'الفيزا' : 'فودافون كاش')}:`, '0');
+                    if (amount === null) return;
+                    amount = parseFloat(amount);
+                    if (isNaN(amount) || amount <= 0) {
+                        UI.notify('المبلغ غير صحيح', 'error');
+                        return;
+                    }
+
+                    const balances = Data.config.walletBalances;
+                    
+                    if (action === 'add') {
+                        balances[type] += amount;
+                        UI.notify(`تم إيداع ${amount} في ${type === 'cash' ? 'الكاش' : (type === 'visa' ? 'الفيزا' : 'فودافون كاش')}`);
+                    } else {
+                        if (balances[type] < amount) {
+                            UI.notify('الرصيد غير كافٍ', 'error');
+                            return;
+                        }
+                        if (type === 'cash') {
+                            balances.cash -= amount;
+                            UI.notify(`تم سحب ${amount} من الكاش`);
+                        } else {
+                            balances[type] -= amount;
+                            balances.cash += amount;
+                            UI.notify(`تم سحب ${amount} من ${type === 'visa' ? 'الفيزا' : 'فودافون كاش'} وتحويلها إلى الكاش`);
+                        }
+                    }
+
+                    Data.save();
+                    document.getElementById('wallet-cash').innerText = balances.cash;
+                    document.getElementById('wallet-visa').innerText = balances.visa;
+                    document.getElementById('wallet-vodafone').innerText = balances.vodafone;
+                }
+            };
+
+            // المصادقة على المحفظة
+            const WalletAuth = {
+                currentInput: '',
+                showAuth: function() {
+                    if (!Data.config.walletPinEnabled) {
+                        Wallet.showWallet();
+                        return;
+                    }
+                    this.clear();
+                    UI.showModal('wallet-auth-modal');
+                },
+                push: function(num) {
+                    if (this.currentInput.length < 4) {
+                        this.currentInput += num;
+                        this.updateDots();
+                        if (this.currentInput.length === 4) this.verify();
+                    }
+                },
+                back: function() {
+                    this.currentInput = this.currentInput.slice(0, -1);
+                    this.updateDots();
+                },
+                clear: function() {
+                    this.currentInput = '';
+                    this.updateDots();
+                },
+                updateDots: function() {
+                    const dots = document.querySelectorAll('#wallet-pin-dots .pin-dot');
+                    dots.forEach((d, i) => {
+                        if (i < this.currentInput.length) d.classList.add('active');
+                        else d.classList.remove('active');
+                    });
+                },
+                verify: function() {
+                    if (this.currentInput === Data.config.walletPin) {
+                        UI.closeModal('wallet-auth-modal');
+                        Wallet.showWallet();
+                    } else {
+                        UI.notify('الرقم السري غير صحيح', 'error');
+                        this.clear();
+                    }
+                }
+            };
+
+            // UI
+            const UI = {
+                state: { activeFormSection: 'work', currentMonth: new Date().getMonth(), currentYear: new Date().getFullYear() },
+                
+                init: function() {
+                    UI.applyTheme();
+                    UI.setFormSection('work');
+                    UI.refresh();
+                    
+                    document.getElementById('main-form').onsubmit = (e) => {
+                        e.preventDefault();
+                        let category = document.getElementById('f-category').value;
+                        // إذا كان التصنيف "أخرى" نأخذ القيمة من الحقل المخصص
+                        if (category === 'أخرى') {
+                            const customCat = document.getElementById('f-custom-category').value.trim();
+                            if (customCat === '') {
+                                UI.notify('الرجاء كتابة اسم التصنيف الجديد', 'error');
+                                return;
+                            }
+                            category = customCat;
+                        }
+                        const entry = {
+                            amount: parseFloat(document.getElementById('f-amount').value),
+                            category: category,
+                            date: document.getElementById('f-date').value,
+                            note: document.getElementById('f-note').value,
+                            section: UI.state.activeFormSection
+                        };
+                        const id = document.getElementById('entry-id').value;
+                        let success = false;
+                        if(id) {
+                            success = Data.updateEntry(Number(id), entry);
+                        } else {
+                            success = Data.addEntry(entry);
+                        }
+                        
+                        if (success) {
+                            UI.closeModal('add-modal');
+                            UI.notify('تم حفظ المعاملة بنجاح');
+                        }
+                    };
+
+                    // مراقبة تغيير التصنيف لإظهار/إخفاء حقل "أخرى"
+                    document.getElementById('f-category').addEventListener('change', function(e) {
+                        const customContainer = document.getElementById('custom-category-container');
+                        if (e.target.value === 'أخرى') {
+                            customContainer.classList.remove('hidden');
+                        } else {
+                            customContainer.classList.add('hidden');
+                        }
+                    });
+                },
+
+                refresh: function() {
+                    UI.refreshDashboard();
+                    UI.refreshList();
+                    UI.renderCharts();
+                    UI.refreshInsights();
+                },
+
+                refreshDashboard: function() {
+                    const stats = Analytics.getMonthlyStats(UI.state.currentMonth, UI.state.currentYear);
+                    const show = !Data.config.hideAmounts;
+                    document.getElementById('personal-budget-label').innerText = show ? stats.pers.toFixed(2) : '••••';
+                    const pPerc = Math.min((stats.pers / Data.config.budgetPers) * 100, 100);
+                    document.getElementById('personal-budget-percent').innerText = `${pPerc.toFixed(0)}%`;
+                    document.getElementById('personal-budget-progress').style.width = `${pPerc}%`;
+                    if(pPerc >= 90) document.getElementById('personal-budget-progress').className = "h-full bg-red-500";
+                    else if(pPerc >= 75) document.getElementById('personal-budget-progress').className = "h-full bg-amber-500";
+                    else document.getElementById('personal-budget-progress').className = "h-full premium-gradient";
+                },
+
+                refreshList: function() {
+                    const query = document.getElementById('search-input').value;
+                    const type = document.getElementById('filter-type').value;
+                    const list = Data.getFiltered(query, type);
+                    const container = document.getElementById('entries-list');
+                    const fragment = document.createDocumentFragment();
+                    list.forEach(item => {
+                        const div = document.createElement('div');
+                        div.className = "swipe-container";
+                        div.innerHTML = `
+                            <div class="glass p-5 rounded-3xl flex justify-between items-center relative z-10 transition-transform bg-[#1e293b]/20 dark:bg-white/5">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-11 h-11 rounded-xl ${item.section === 'work' ? 'bg-brand-primary/10 text-brand-primary' : 'bg-brand-secondary/10 text-brand-secondary'} flex items-center justify-center text-lg">
+                                        <i class="fa-solid ${UI.getIcon(item.category)}"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="text-sm font-black">${item.note || item.category}</h5>
+                                        <p class="text-[9px] font-bold text-slate-500 uppercase">${item.date} • ${item.category}</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-4">
+                                    <div class="text-right">
+                                        <p class="text-sm font-black dark:text-white light:text-slate-900">${Data.config.hideAmounts ? '•••' : item.amount.toFixed(2)}</p>
+                                        <span class="text-[8px] font-bold text-slate-500 uppercase">${item.section === 'work' ? 'عمل' : 'شخصي'}</span>
+                                    </div>
+                                    <div class="flex gap-1">
+                                        <button onclick="UI.editEntry(${item.id})" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-brand-primary"><i class="fa-solid fa-pen"></i></button>
+                                        <button onclick="UI.deleteEntry(${item.id})" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-red-500"><i class="fa-solid fa-trash"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        fragment.appendChild(div);
+                    });
+                    container.innerHTML = list.length ? '' : '<div class="py-20 text-center text-slate-600 font-bold text-sm">لا توجد سجلات مطابقة</div>';
+                    container.appendChild(fragment);
+                },
+
+                refreshInsights: function() {
+                    const forecast = Analytics.getForecast();
+                    const dist = Analytics.getCategoryDist();
+                    const topCat = Object.entries(dist).sort((a,b) => b[1] - a[1])[0]?.[0] || 'لا توجد بيانات';
+                    document.getElementById('insight-forecast').innerHTML = `متوقع إنفاق <span class="text-brand-primary">${forecast.expectedTotal.toFixed(0)} ج.م</span> هذا الشهر`;
+                    document.getElementById('insight-category').innerHTML = `الأكثر إنفاقاً: <span class="text-brand-accent">${topCat}</span>`;
+                },
+
+                renderCharts: function() {
+                    const ctxPie = document.getElementById('pieChart').getContext('2d');
+                    const ctxLine = document.getElementById('lineChart').getContext('2d');
+                    const dist = Analytics.getCategoryDist();
+                    if(window.pie) window.pie.destroy();
+                    window.pie = new Chart(ctxPie, {
+                        type: 'doughnut',
+                        data: {
+                            labels: Object.keys(dist),
+                            datasets: [{
+                                data: Object.values(dist),
+                                backgroundColor: ['#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444', '#10b981', '#ec4899', '#14b8a6', '#f97316'],
+                                borderWidth: 0
+                            }]
+                        },
+                        options: { plugins: { legend: { display: false }, tooltip: { bodyFont: { family: 'Cairo' } } }, cutout: '75%' }
+                    });
+                    if(window.line) window.line.destroy();
+                    const last7Days = [...Array(7)].map((_, i) => {
+                        const d = new Date(); d.setDate(d.getDate() - i); return d.toISOString().split('T')[0];
+                    }).reverse();
+                    const dailyData = last7Days.map(date => Data.entries.filter(e => e.date === date).reduce((s, e) => s + e.amount, 0));
+                    window.line = new Chart(ctxLine, {
+                        type: 'line',
+                        data: {
+                            labels: last7Days.map(d => d.split('-')[2]),
+                            datasets: [{
+                                label: 'الإنفاق اليومي',
+                                data: dailyData,
+                                borderColor: '#3b82f6',
+                                tension: 0.4,
+                                fill: true,
+                                backgroundColor: 'rgba(59, 130, 246, 0.1)'
+                            }]
+                        },
+                        options: { scales: { y: { display: false }, x: { grid: { display: false }, ticks: { color: '#64748b', font: { size: 9 } } } }, plugins: { legend: { display: false } } }
+                    });
+                },
+
+                getIcon: (cat) => {
+                    const map = { 
+                        'ميني باص': 'fa-bus', 'باص': 'fa-bus', 'اوبر': 'fa-taxi', 'مترو': 'fa-train-subway-tunnel',
+                        'بنزين': 'fa-gas-pump', 'صيانة': 'fa-screwdriver-wrench', 'اكل': 'fa-utensils',
+                        'كافيه': 'fa-mug-hot', 'خروج': 'fa-door-open', 'سوبر ماركت': 'fa-cart-shopping',
+                        'ترفيه': 'fa-gamepad', 'صحة': 'fa-heart-pulse', 'إيجار': 'fa-house-circle-check',
+                        'أخرى': 'fa-receipt', 'انتقالات': 'fa-taxi'
+                    };
+                    return map[cat] || 'fa-receipt';
+                },
+
+                setFormSection: function(section) {
+                    UI.state.activeFormSection = section;
+                    let cats = [];
+                    if (section === 'work') {
+                        cats = ['ميني باص', 'باص', 'اوبر', 'مترو', 'بنزين', 'صيانة', 'أخرى'];
+                    } else {
+                        cats = ['اكل', 'سجاير', 'مواصلات', 'كافيه', 'خروج', 'سوبر ماركت', 'ترفيه', 'صحة', 'إيجار', 'أخرى'];
+                    }
+                    const select = document.getElementById('f-category');
+                    select.innerHTML = cats.map(c => `<option value="${c}">${c}</option>`).join('');
+                    
+                    document.getElementById('form-tab-work').className = section === 'work' ? "flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-brand-primary text-white" : "flex-1 py-3 rounded-xl font-black text-[10px] uppercase text-slate-500";
+                    document.getElementById('form-tab-personal').className = section === 'personal' ? "flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-brand-primary text-white" : "flex-1 py-3 rounded-xl font-black text-[10px] uppercase text-slate-500";
+                    
+                    // إخفاء حقل "أخرى" عند تغيير القسم
+                    document.getElementById('custom-category-container').classList.add('hidden');
+                },
+
+                editEntry: function(id) {
+                    const entry = Data.entries.find(e => e.id === id);
+                    if(!entry) return;
+                    document.getElementById('entry-id').value = id;
+                    document.getElementById('f-amount').value = entry.amount;
+                    UI.setFormSection(entry.section);
+                    // نتحقق هل التصنيف موجود في القائمة أم لا
+                    const select = document.getElementById('f-category');
+                    const optionExists = Array.from(select.options).some(opt => opt.value === entry.category);
+                    if (optionExists) {
+                        select.value = entry.category;
+                        document.getElementById('custom-category-container').classList.add('hidden');
+                    } else {
+                        // إذا لم يكن موجوداً، نختار "أخرى" ونضع القيمة في الحقل المخصص
+                        select.value = 'أخرى';
+                        document.getElementById('f-custom-category').value = entry.category;
+                        document.getElementById('custom-category-container').classList.remove('hidden');
+                    }
+                    document.getElementById('f-date').value = entry.date;
+                    document.getElementById('f-note').value = entry.note;
+                    document.getElementById('modal-title').innerText = "تعديل المعاملة";
+                    UI.showModal('add-modal');
+                },
+
+                deleteEntry: function(id) {
+                    if(confirm('هل أنت متأكد من حذف هذه المعاملة نهائياً؟')) {
+                        if (Data.deleteEntry(id)) {
+                            UI.notify('تم الحذف بنجاح وتم إعادة المبلغ إلى الكاش', 'success');
+                        }
+                    }
+                },
+
+                showModal: function(id) {
+                    if(id === 'add-modal' && !document.getElementById('entry-id').value) {
+                        document.getElementById('modal-title').innerText = "إضافة معاملة جديدة";
+                        document.getElementById('main-form').reset();
+                        document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+                        document.getElementById('custom-category-container').classList.add('hidden');
+                    }
+                    document.getElementById(id).classList.remove('hidden');
+                },
+                closeModal: function(id) { 
+                    document.getElementById(id).classList.add('hidden');
+                    if(id === 'add-modal') document.getElementById('entry-id').value = '';
+                },
+
+                toggleTheme: function() {
+                    Data.config.isDark = !Data.config.isDark;
+                    UI.applyTheme();
+                    Data.save();
+                },
+
+                applyTheme: function() {
+                    document.body.className = Data.config.isDark ? 'dark' : 'light';
+                    document.getElementById('theme-icon').className = Data.config.isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+                },
+
+                toggleAmountVisibility: function() {
+                    Data.config.hideAmounts = !Data.config.hideAmounts;
+                    document.getElementById('eye-icon').className = Data.config.hideAmounts ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+                    Data.save();
+                },
+
+                saveSettings: function() {
+                    Data.config.name = document.getElementById('s-name').value;
+                    Data.config.company = document.getElementById('s-company').value;
+                    Data.config.budgetWork = parseFloat(document.getElementById('s-budget-work').value);
+                    Data.config.budgetPers = parseFloat(document.getElementById('s-budget-pers').value);
+                    
+                    // إعدادات المحفظة
+                    Data.config.walletPinEnabled = document.getElementById('s-wallet-pin-enabled').checked;
+                    const newPin = document.getElementById('s-wallet-pin').value;
+                    if (newPin && /^\d{4}$/.test(newPin)) {
+                        Data.config.walletPin = newPin;
+                    } else {
+                        UI.notify('الرقم السري للمحفظة يجب أن يكون 4 أرقام', 'error');
+                        return;
+                    }
+
+                    Data.save();
+                    UI.closeModal('settings-modal');
+                    UI.notify('تم حفظ الإعدادات بنجاح');
+                },
+
+                notify: function(msg, type = 'success') {
+                    const toast = document.getElementById('toast');
+                    const icon = document.getElementById('toast-icon');
+                    document.getElementById('toast-msg').innerText = msg;
+                    icon.className = `w-8 h-8 rounded-full flex items-center justify-center ${type === 'success' ? 'bg-emerald-500/20 text-emerald-500' : 'bg-red-500/20 text-red-500'}`;
+                    icon.innerHTML = `<i class="fa-solid ${type === 'success' ? 'fa-check' : 'fa-triangle-exclamation'} text-xs"></i>`;
+                    toast.classList.replace('opacity-0', 'opacity-100');
+                    toast.classList.replace('translate-y-[-20px]', 'translate-y-0');
+                    setTimeout(() => {
+                        toast.classList.replace('opacity-100', 'opacity-0');
+                        toast.classList.replace('translate-y-0', 'translate-y-[-20px]');
+                    }, 3000);
+                }
+            };
+
+            // Export Module (مع دعم التصدير حسب القسم)
+            const Export = {
+                // دوال مساعدة
+                filterBySection: function(section) {
+                    if (!section) return Data.entries;
+                    return Data.entries.filter(e => e.section === section);
+                },
+                // واتساب
+                toWhatsApp: function(section) {
+                    let title = section === 'work' ? 'العمل' : (section === 'personal' ? 'الشخصي' : 'الكلي');
+                    let list = section ? Data.entries.filter(e => e.section === section) : Data.entries;
+                    if(list.length === 0) return UI.notify(`لا توجد بيانات لقسم ${title}`, 'error');
+                    
+                    let text = `📊 *تقرير مصروفات ${title}*\n👤 *المستخدم:* ${Data.config.name}\n━━━━━━━━━━━━━━\n`;
+                    list.forEach(e => text += `• ${e.note || e.category}: *${e.amount} ج.م*\n`);
+                    text += `━━━━━━━━━━━━━━\n💰 *الإجمالي: ${list.reduce((s,i)=>s+i.amount,0)} ج.م*`;
+                    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`);
+                },
+                toWorkWhatsApp: function() { this.toWhatsApp('work'); },
+                toPersonalWhatsApp: function() { this.toWhatsApp('personal'); },
+
+                // PDF
+                toPDF: function(section) {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF();
+                    const now = new Date();
+                    let title = section === 'work' ? 'Work' : (section === 'personal' ? 'Personal' : 'Combined');
+                    let list = section ? Data.entries.filter(e => e.section === section) : Data.entries;
+                    
+                    doc.setFont("helvetica", "bold");
+                    doc.text(`Financial Report - ${title} - ${now.getMonth()+1}/${now.getFullYear()}`, 10, 10);
+                    doc.setFontSize(10);
+                    doc.text(`User: ${Data.config.name} | Company: ${Data.config.company}`, 10, 20);
+                    
+                    let y = 30;
+                    doc.text("Date", 10, y); doc.text("Category", 50, y); doc.text("Note", 100, y); doc.text("Amount", 170, y);
+                    list.slice(0, 30).forEach(e => {
+                        y += 10;
+                        doc.text(e.date, 10, y);
+                        doc.text(e.category, 50, y);
+                        doc.text(e.note.substring(0, 15), 100, y);
+                        doc.text(e.amount.toString(), 170, y);
+                    });
+                    
+                    doc.save(`Report_${title}_${now.getTime()}.pdf`);
+                    UI.notify(`تم تصدير PDF ${title} بنجاح`);
+                },
+                toWorkPDF: function() { this.toPDF('work'); },
+                toPersonalPDF: function() { this.toPDF('personal'); },
+
+                // Excel
+                toExcel: function(section) {
+                    let list = section ? Data.entries.filter(e => e.section === section) : Data.entries;
+                    let title = section === 'work' ? 'Work' : (section === 'personal' ? 'Personal' : 'All');
+                    const ws = XLSX.utils.json_to_sheet(list);
+                    const wb = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(wb, ws, title);
+                    XLSX.writeFile(wb, `ExpenseData_${title}.xlsx`);
+                    UI.notify(`تم تصدير Excel ${title} بنجاح`);
+                },
+                toWorkExcel: function() { this.toExcel('work'); },
+                toPersonalExcel: function() { this.toExcel('personal'); },
+
+                // باقي الدوال
+                backupJSON: function() {
+                    const blob = new Blob([JSON.stringify(Data.entries)], {type: "application/json"});
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url; a.download = `backup_${Date.now()}.json`; a.click();
+                },
+                importJSON: function(event) {
+                    const file = event.target.files[0];
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        try {
+                            const imported = JSON.parse(e.target.result);
+                            if(Array.isArray(imported)) {
+                                Data.entries = [...imported, ...Data.entries];
+                                Data.save();
+                                UI.notify('تم استيراد البيانات بنجاح');
+                            }
+                        } catch(err) { UI.notify('خطأ في تنسيق الملف', 'error'); }
+                    };
+                    reader.readAsText(file);
+                }
+            };
+
+            window.UI = UI;
+            window.Export = Export;
+            window.Wallet = Wallet;
+            window.WalletAuth = WalletAuth;
+
+            window.onload = UI.init;
+        })();
     </script>
 </body>
 </html>
-
- 
