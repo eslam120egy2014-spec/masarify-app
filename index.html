@@ -116,20 +116,21 @@
     <main id="app-content" class="pt-24 pb-32 px-4 max-w-4xl mx-auto space-y-6">
 
         <section class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="glass p-6 rounded-[2.5rem] relative overflow-hidden group">
+            <!-- البطاقة القابلة للنقر لعرض إجمالي مواصلات العمل -->
+            <div onclick="UI.toggleWorkTransport()" class="glass p-6 rounded-[2.5rem] relative overflow-hidden group cursor-pointer tap-scale">
                 <div class="absolute -right-4 -top-4 w-24 h-24 bg-brand-primary opacity-5 blur-3xl group-hover:opacity-20 transition-all"></div>
                 <div class="flex justify-between items-start mb-6">
                     <div>
-                        <p class="text-[10px] font-black text-brand-primary uppercase tracking-widest mb-1">الميزانية الشخصية</p>
+                        <p id="budget-header-label" class="text-[10px] font-black text-brand-primary uppercase tracking-widest mb-1">الميزانية الشخصية</p>
                         <h3 id="personal-budget-label" class="text-3xl font-black dark:text-white light:text-slate-900 tracking-tighter">0.00</h3>
                     </div>
                     <div class="w-10 h-10 rounded-xl bg-brand-primary/10 flex items-center justify-center text-brand-primary">
                         <i class="fa-solid fa-wallet"></i>
                     </div>
                 </div>
-                <div class="space-y-2">
+                <div id="budget-progress-container" class="space-y-2">
                     <div class="flex justify-between text-[10px] font-bold text-slate-400">
-                        <span>المستهلك من الميزانية</span>
+                        <span id="progress-label">المستهلك من الميزانية</span>
                         <span id="personal-budget-percent">0%</span>
                     </div>
                     <div class="h-1.5 w-full bg-slate-800/50 rounded-full overflow-hidden">
@@ -184,7 +185,8 @@
         </section>
 
         <section id="entries-list" class="space-y-3">
-            </section>
+            <!-- Dynamic entries -->
+        </section>
 
     </main>
 
@@ -612,7 +614,12 @@
 
             // UI Module
             const UI = {
-                state: { activeFormSection: 'work', currentMonth: new Date().getMonth(), currentYear: new Date().getFullYear() },
+                state: { 
+                    activeFormSection: 'work', 
+                    currentMonth: new Date().getMonth(), 
+                    currentYear: new Date().getFullYear(),
+                    showWorkTransport: false // NEW: toggle for work transport total
+                },
                 
                 init: function() {
                     UI.applyTheme();
@@ -675,16 +682,51 @@
                     UI.refreshInsights();
                 },
 
+                // NEW: Calculate total for work transport categories
+                calculateWorkTransportTotal: function() {
+                    const transportCategories = ['ميني باص', 'باص', 'اوبر', 'مترو', 'بنزين']; // تعريف فئات المواصلات
+                    return Data.entries
+                        .filter(e => e.section === 'work' && transportCategories.includes(e.category))
+                        .reduce((sum, e) => sum + e.amount, 0);
+                },
+
+                // NEW: Toggle between personal budget and work transport total
+                toggleWorkTransport: function() {
+                    this.state.showWorkTransport = !this.state.showWorkTransport;
+                    this.refreshDashboard();
+                },
+
                 refreshDashboard: function() {
                     const stats = Analytics.getMonthlyStats(UI.state.currentMonth, UI.state.currentYear);
                     const show = !Data.config.hideAmounts;
-                    document.getElementById('personal-budget-label').innerText = show ? stats.pers.toFixed(2) : '••••';
-                    const pPerc = Math.min((stats.pers / Data.config.budgetPers) * 100, 100) || 0;
-                    document.getElementById('personal-budget-percent').innerText = `${pPerc.toFixed(0)}%`;
-                    document.getElementById('personal-budget-progress').style.width = `${pPerc}%`;
-                    if(pPerc >= 90) document.getElementById('personal-budget-progress').className = "h-full bg-red-500";
-                    else if(pPerc >= 75) document.getElementById('personal-budget-progress').className = "h-full bg-amber-500";
-                    else document.getElementById('personal-budget-progress').className = "h-full premium-gradient";
+                    
+                    const budgetHeader = document.getElementById('budget-header-label');
+                    const budgetLabel = document.getElementById('personal-budget-label');
+                    const progressContainer = document.getElementById('budget-progress-container');
+                    const progressLabel = document.getElementById('progress-label');
+                    const percentSpan = document.getElementById('personal-budget-percent');
+                    const progressBar = document.getElementById('personal-budget-progress');
+
+                    if (this.state.showWorkTransport) {
+                        // عرض إجمالي مواصلات العمل
+                        const workTransportTotal = this.calculateWorkTransportTotal();
+                        budgetHeader.innerText = 'مواصلات العمل';
+                        budgetLabel.innerText = show ? workTransportTotal.toFixed(2) : '••••';
+                        // إخفاء شريط التقدم والمعلومات المرتبطة بالميزانية
+                        progressContainer.style.display = 'none';
+                    } else {
+                        // العرض العادي للميزانية الشخصية
+                        budgetHeader.innerText = 'الميزانية الشخصية';
+                        budgetLabel.innerText = show ? stats.pers.toFixed(2) : '••••';
+                        progressContainer.style.display = 'block';
+                        
+                        const pPerc = Math.min((stats.pers / Data.config.budgetPers) * 100, 100) || 0;
+                        percentSpan.innerText = `${pPerc.toFixed(0)}%`;
+                        progressBar.style.width = `${pPerc}%`;
+                        if(pPerc >= 90) progressBar.className = "h-full bg-red-500";
+                        else if(pPerc >= 75) progressBar.className = "h-full bg-amber-500";
+                        else progressBar.className = "h-full premium-gradient";
+                    }
                 },
 
                 getWalletBadge: function(walletType) {
@@ -875,6 +917,7 @@
                     Data.config.hideAmounts = !Data.config.hideAmounts;
                     document.getElementById('eye-icon').className = Data.config.hideAmounts ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
                     Data.save();
+                    UI.refreshDashboard(); // تحديث فوري للعرض
                 },
 
                 saveSettings: function() {
