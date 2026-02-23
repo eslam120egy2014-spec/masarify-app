@@ -15,7 +15,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <script>
@@ -116,7 +115,6 @@
     <main id="app-content" class="pt-24 pb-32 px-4 max-w-4xl mx-auto space-y-6">
 
         <section class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <!-- البطاقة القابلة للنقر لعرض إجمالي مواصلات العمل -->
             <div onclick="UI.toggleWorkTransport()" class="glass p-6 rounded-[2.5rem] relative overflow-hidden group cursor-pointer tap-scale">
                 <div class="absolute -right-4 -top-4 w-24 h-24 bg-brand-primary opacity-5 blur-3xl group-hover:opacity-20 transition-all"></div>
                 <div class="flex justify-between items-start mb-6">
@@ -185,8 +183,7 @@
         </section>
 
         <section id="entries-list" class="space-y-3">
-            <!-- Dynamic entries -->
-        </section>
+            </section>
 
     </main>
 
@@ -445,7 +442,6 @@
                     walletPin: '0000'
                 },
 
-                // مطورة: تدعم التحقق والخصم من أي محفظة
                 deductFromWallet: function(amount, walletType) {
                     walletType = walletType || 'cash';
                     if (Data.config.walletBalances[walletType] >= amount) {
@@ -554,15 +550,20 @@
                     UI.showModal('wallet-modal');
                 },
                 modify: function(type, action) {
-                    let amount = prompt(`أدخل المبلغ للإيداع في ${type === 'cash' ? 'الكاش' : (type === 'visa' ? 'الفيزا' : 'فودافون كاش')}:`, '0');
-                    if (amount === null) return;
+                    let walletName = type === 'cash' ? 'الكاش' : (type === 'visa' ? 'الفيزا' : 'فودافون كاش');
+                    let amount = prompt(`أدخل المبلغ للإيداع في ${walletName}:`, '');
+                    
+                    if (amount === null || amount.trim() === '') return;
+                    
                     amount = parseFloat(amount);
+                    
                     if (isNaN(amount) || amount <= 0) {
-                        UI.notify('المبلغ غير صحيح', 'error');
+                        UI.notify('⚠️ يرجى إدخال مبلغ صحيح أكبر من الصفر', 'error');
                         return;
                     }
+                    
                     Data.config.walletBalances[type] += amount;
-                    UI.notify('تم تحديث الرصيد بنجاح');
+                    UI.notify(`تم إيداع ${amount} ج.م في ${walletName} بنجاح`);
                     Data.save();
                     this.showWallet();
                 }
@@ -618,7 +619,7 @@
                     activeFormSection: 'work', 
                     currentMonth: new Date().getMonth(), 
                     currentYear: new Date().getFullYear(),
-                    showWorkTransport: false // NEW: toggle for work transport total
+                    showWorkTransport: false 
                 },
                 
                 init: function() {
@@ -626,7 +627,6 @@
                     UI.setFormSection('work');
                     UI.refresh();
                     
-                    // إغلاق النوافذ عند النقر خارجها
                     window.addEventListener('click', (e) => {
                         if (e.target.classList.contains('modal-backdrop')) {
                             e.target.classList.add('hidden');
@@ -634,7 +634,6 @@
                         }
                     });
 
-                    // تحميل بيانات الإعدادات
                     document.getElementById('s-name').value = Data.config.name;
                     document.getElementById('s-company').value = Data.config.company;
                     document.getElementById('s-budget-work').value = Data.config.budgetWork;
@@ -682,15 +681,13 @@
                     UI.refreshInsights();
                 },
 
-                // NEW: Calculate total for work transport categories
                 calculateWorkTransportTotal: function() {
-                    const transportCategories = ['ميني باص', 'باص', 'اوبر', 'مترو', 'بنزين']; // تعريف فئات المواصلات
+                    const transportCategories = ['ميني باص', 'باص', 'اوبر', 'مترو', 'بنزين']; 
                     return Data.entries
                         .filter(e => e.section === 'work' && transportCategories.includes(e.category))
                         .reduce((sum, e) => sum + e.amount, 0);
                 },
 
-                // NEW: Toggle between personal budget and work transport total
                 toggleWorkTransport: function() {
                     this.state.showWorkTransport = !this.state.showWorkTransport;
                     this.refreshDashboard();
@@ -708,14 +705,11 @@
                     const progressBar = document.getElementById('personal-budget-progress');
 
                     if (this.state.showWorkTransport) {
-                        // عرض إجمالي مواصلات العمل
                         const workTransportTotal = this.calculateWorkTransportTotal();
                         budgetHeader.innerText = 'مواصلات العمل';
                         budgetLabel.innerText = show ? workTransportTotal.toFixed(2) : '••••';
-                        // إخفاء شريط التقدم والمعلومات المرتبطة بالميزانية
                         progressContainer.style.display = 'none';
                     } else {
-                        // العرض العادي للميزانية الشخصية
                         budgetHeader.innerText = 'الميزانية الشخصية';
                         budgetLabel.innerText = show ? stats.pers.toFixed(2) : '••••';
                         progressContainer.style.display = 'block';
@@ -917,7 +911,7 @@
                     Data.config.hideAmounts = !Data.config.hideAmounts;
                     document.getElementById('eye-icon').className = Data.config.hideAmounts ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
                     Data.save();
-                    UI.refreshDashboard(); // تحديث فوري للعرض
+                    UI.refreshDashboard(); 
                 },
 
                 saveSettings: function() {
@@ -961,18 +955,55 @@
                     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`);
                 },
                 toPDF: function() {
-                    const { jsPDF } = window.jspdf;
-                    const doc = new jsPDF();
-                    doc.setFont("helvetica", "bold");
-                    doc.text(`Financial Report`, 10, 10);
-                    doc.setFontSize(10);
-                    let y = 30;
-                    doc.text("Date", 10, y); doc.text("Category", 50, y); doc.text("Amount", 170, y);
-                    Data.entries.slice(0, 30).forEach(e => {
-                        y += 10;
-                        doc.text(e.date, 10, y); doc.text(e.category, 50, y); doc.text(e.amount.toString(), 170, y);
-                    });
-                    doc.save(`Report.pdf`);
+                    if(Data.entries.length === 0) return UI.notify(`لا توجد بيانات`, 'error');
+                    
+                    let printContents = `
+                        <html dir="rtl">
+                        <head>
+                            <title>تقرير المصروفات</title>
+                            <style>
+                                body { font-family: 'Cairo', sans-serif; padding: 20px; }
+                                table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                                th, td { border: 1px solid #ddd; padding: 12px; text-align: right; }
+                                th { background-color: #f8fafc; color: #3b82f6; }
+                                .header { text-align: center; margin-bottom: 30px; }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="header">
+                                <h2>تقرير المصروفات - ExpensePro Elite</h2>
+                                <p>المستخدم: ${Data.config.name} | الإجمالي: ${Data.entries.reduce((s,i)=>s+i.amount,0)} ج.م</p>
+                            </div>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>التاريخ</th>
+                                        <th>التصنيف</th>
+                                        <th>المحفظة</th>
+                                        <th>المبلغ (ج.م)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${Data.entries.map(e => `
+                                        <tr>
+                                            <td>${e.date}</td>
+                                            <td>${e.note || e.category}</td>
+                                            <td>${e.wallet === 'cash' ? 'كاش' : e.wallet === 'visa' ? 'فيزا' : 'فودافون كاش'}</td>
+                                            <td>${e.amount}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                            <script>
+                                window.onload = function() { window.print(); window.close(); }
+                            <\/script>
+                        </body>
+                        </html>
+                    `;
+                    
+                    let printWindow = window.open('', '_blank');
+                    printWindow.document.write(printContents);
+                    printWindow.document.close();
                 },
                 toExcel: function() {
                     const ws = XLSX.utils.json_to_sheet(Data.entries);
@@ -1002,6 +1033,23 @@
                     reader.readAsText(file);
                 }
             };
+
+            // PWA Service Worker (Inline)
+            const swCode = `
+                self.addEventListener('install', (e) => e.waitUntil(self.skipWaiting()));
+                self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()));
+                self.addEventListener('fetch', (e) => {
+                    e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+                });
+            `;
+            const blob = new Blob([swCode], { type: 'application/javascript' });
+            const swUrl = URL.createObjectURL(blob);
+
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register(swUrl).then(() => {
+                    console.log('App is ready for offline use');
+                });
+            }
 
             window.UI = UI; window.Export = Export; window.Wallet = Wallet; window.WalletAuth = WalletAuth;
             window.onload = UI.init;
